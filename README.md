@@ -8,7 +8,7 @@ First, install timewarrior on the machine where the bot will run later. You need
 
 ### Install timewarrior
 
-Got to the [webpage](https://timewarrior.net/) and follow the instructions.
+Got to the [webpage](https://timewarrior.net/) and follow the instructions. If you want, edit and copy the options file (timewarrior.cfg) and put it into it place.
 
 ### Get a Telegram account and a bot
 
@@ -27,7 +27,7 @@ Description=Timewarrior Telegram Service
 
 [Service]
 # Command to execute when the service is started
-ExecStart=/usr/bin/python3 /root/timewarrior_bot.py
+ExecStart=/usr/bin/python3 /path/to/timewarrior_bot.py
 
 [Install]
 WantedBy=default.target
