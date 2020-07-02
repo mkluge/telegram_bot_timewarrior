@@ -1,0 +1,11 @@
+{
+    "bot_id": "your bot id here",
+    "user_id": your user id here,
+    "get_timew_commands": "timew help | grep Additional -B1000 | grep timew | grep -v Usage | awk '{print $2}'",
+    "task_shortcuts": {
+        "Ma": "Management",
+        "ma": "Management"
+    },
+    "default_task": "Management",
+    "timew_path": "/usr/local/bin/timew"
+}
