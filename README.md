@@ -1,16 +1,41 @@
 # Telegram Bot for Timewarrior
 
-I like to use [timewarrior](https://timewarrior.net/) for tracking my time. I also like to use my phone for 
+I like to use [timewarrior](https://timewarrior.net/) for tracking my time. I also like to use my phone for starting and stopping the clock.
 
 ## Installation and Configuration
 
-### Get a Telegram Account and a Bot
+First, install timewarrior on the machine where the bot will run later. You need a telegram account and a bot. Then you nee to create a config file (use the template provided) and run the bot as a python service. 
 
+### Install timewarrior
 
-### 
+Got to the [webpage](https://timewarrior.net/) and follow the instructions.
 
+### Get a Telegram account and a bot
 
+Install Telegram. Get your user id by sending a message to @userinfobot in Telegram. Put your user id into the config file.
+
+[Create a telegram bot](https://core.telegram.org/bots). Get the bot HTTP API token and put it into the bot id field in the config file.
+
+### Clone this repo and install the python service
+
+First part is easy. The second looks in my case like this:
+```python
+linux:~$ cat /etc/systemd/system/timewarrior.service 
+[Unit]
+# Human readable name of the unit
+Description=Timewarrior Telegram Service
+
+[Service]
+# Command to execute when the service is started
+ExecStart=/usr/bin/python3 /root/timewarrior_bot.py
+
+[Install]
+WantedBy=default.target
+
+```
+Or just run the script with python3.
 
 ## Usage
 
+You can send the bot all [timewarrior commands](https://timewarrior.net/docs/). The bot provides a virtual keyboard for some commands. The start and the stop buttons record the time with the default activity.
 
