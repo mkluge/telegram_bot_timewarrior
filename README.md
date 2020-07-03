@@ -4,7 +4,7 @@ I like to use [timewarrior](https://timewarrior.net/) for tracking my time. I al
 
 ## Installation and Configuration
 
-First, install timewarrior on the machine where the bot will run later. You need a telegram account and a bot. Then you nee to create a config file (use the template provided) and run the bot as a python service. 
+First, install timewarrior on the machine where the bot will run later. You need a telegram account and a bot. Then you nee to create a config file (use the template provided) and run the bot as a python service. You will need to install the telpot python library which can be done with ``pip3 install telepot``.
 
 ### Install timewarrior
 
