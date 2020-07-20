@@ -37,5 +37,5 @@ Or just run the script with python3.
 
 ## Usage
 
-You can send the bot all [timewarrior commands](https://timewarrior.net/docs/). The bot provides a virtual keyboard for some commands. The start and the stop buttons record the time with the default activity.
+You can send the bot all [timewarrior commands](https://timewarrior.net/docs/). The bot provides a virtual keyboard for some commands. The start and the stop buttons record the time with the default activity. Send the bot "?" to get a list of all commands.
 
