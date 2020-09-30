@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+from math import floor
 from datetime import date, timedelta
 
 tage = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
@@ -26,7 +27,7 @@ for i in range(delta.days + 1):
     days.append(day)
 
 df_target = pd.DataFrame(columns=["Datum", "Wochentag", "Start",
-                                  "Ende", "ArbeitszeitSoll", "ArbeitszeitIst", "Pausen", "Differenz"])
+                                  "Ende", "Pausen", "ArbeitszeitSoll", "ArbeitszeitIst", "Differenz"])
 
 for day in days:
     newline = {}
@@ -40,7 +41,7 @@ for day in days:
         newline["Start"] = ""
         newline["Ende"] = ""
         newline["ArbeitszeitIst"] = 0
-        newline["Pausen"] = 0
+        newline["Pausen"] = "00:00"
     else:
         today = df[df.tag == day]
         start = today.iloc[0].start
@@ -50,7 +51,10 @@ for day in days:
         newline["Ende"] = end.strftime("%H:%M")
         newline["ArbeitszeitIst"] = int(today["workmin"].sum())
 
-        newline["Pausen"] = total_minutes-newline["ArbeitszeitIst"]
+        pausen_minuten = total_minutes-newline["ArbeitszeitIst"]
+        pausen_stunden = floor(pausen_minuten / 60)
+        pausen_minuten -= pausen_stunden * 60
+        newline["Pausen"] = '{:02.0f}'.format(pausen_stunden)+":"+'{:02.0f}'.format(pausen_minuten)
     newline["Differenz"] = newline["ArbeitszeitIst"]-newline["ArbeitszeitSoll"]
     df_target = df_target.append(newline, ignore_index=True)
 
