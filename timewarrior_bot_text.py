@@ -9,10 +9,13 @@
 
 """
 
+from enum import Enum
+from os import chdir
 import time
 import sys
 import datetime
 import json
+import re
 from os.path import isfile
 from subprocess import Popen, PIPE
 import telepot
@@ -34,8 +37,15 @@ STANDARD_KEYBOARD = ReplyKeyboardMarkup(keyboard=[
      KeyboardButton(text='Stop'),
      KeyboardButton(text='Cancel'),
      KeyboardButton(text='Status'),
-     KeyboardButton(text='W')],
-])
+     KeyboardButton(text='W')]],
+    resize_keyboard=True,
+)
+
+
+class DeepCommands(Enum):
+    NONE = 0
+    START = 1
+    STOP = 2
 
 
 def call_timew(cmds):
@@ -55,7 +65,7 @@ def call_timew(cmds):
     return err.decode('utf8')
 
 
-def gen_time_keyboard(prefix):
+def gen_time_keyboard():
     """ generates an inline keyboard with the current time
         and 3x5 minutes back in time
 
@@ -72,49 +82,9 @@ def gen_time_keyboard(prefix):
         tw_time = now - datetime.timedelta(minutes=num_5min*5)
         timestr = tw_time.strftime("%H:%M")
         buttons.append(KeyboardButton(text=timestr))
-    return ReplyKeyboardMarkup(keyboard=[buttons])
-
-
-def on_virtual_keyboard(msg):
-    """ called when a key on the virtual keyboard is pressed
-
-    Args:
-        msg (): Message attached with keypress
-    """
-    _, from_id, query_data = telepot.glance(
-        msg, flavor='callback_query')
-    if query_data == "start":
-        BOT.sendMessage(from_id, "Let's go",
-                        reply_markup=gen_time_keyboard("start"))
-        return
-    if query_data == "stop":
-        BOT.sendMessage(from_id, "Ende",
-                        reply_markup=gen_time_keyboard("stop"))
-        return
-    output = "wrong command"
-    if query_data == "week":
-        output = call_timew(['week'])
-    if query_data == "year":
-        now = datetime.datetime.now()
-        timestr = now.strftime("%Y-01-01")
-        output = call_timew(['week', timestr, 'to', 'today'])
-    if query_data == "cancel":
-        output = call_timew(['cancel'])
-    if query_data.startswith("start+"):
-        time_str = query_data.split("+")[1]
-        output = call_timew(['start', CONFIG["default_task"], time_str])
-    if query_data.startswith("stop+"):
-        time_str = query_data.split("+")[1]
-        output = call_timew(['stop', time_str])
-    if query_data == "status":
-        output = call_timew(['summary', ':ids'])
-    if isinstance(output, list):
-        txt = "\n".join(output)
-    else:
-        txt = output
-    txt = "```\n"+txt+"\n```"
-    BOT.sendMessage(from_id, txt, parse_mode="Markdown",
-                    reply_markup=STANDARD_KEYBOARD)
+    return ReplyKeyboardMarkup(keyboard=[buttons],
+                               resize_keyboard=True,
+                               one_time_keyboard=True)
 
 
 def handle(msg):
@@ -124,57 +94,56 @@ def handle(msg):
         msg (): the chat message
     """
     _, _, chat_id = telepot.glance(msg)
-    text = msg['text']
 
     # check for the correct user id
     if msg['from']['id'] != CONFIG["user_id"]:
         return
 
+    text = msg['text']
     words = text.split(" ")
     cmd = words[0].lower()
-    output = []
-    # on my own commands, just do this ...
-    if cmd in OWN_COMMANDS:
-        # list of commands
-        if cmd in ["ls", "?"]:
-            for key in sorted(OWN_COMMANDS.keys()):
-                output.append("%s: %s" % (key, OWN_COMMANDS[key]))
-                # join the last two
-        if cmd == "j":
-            output = call_timew(['join', '@1', '@2'])
-        # continue and join the last two
-        if cmd == "cj":
-            output = call_timew(['continue'])
-            output = output + call_timew(['join', '@1', '@2'])
-    else:
-        # if no known command is given, use "start"
-        if not cmd in TIMEW_COMMANDS:
-            cmd = "start"
-            words = words[0:]
+    output = ""
+    global current_command
+
+    # first the commands that return only a new keyboard
+    if cmd == "start" and len(words) == 1:
+        current_command = DeepCommands.START
+        kbd = gen_time_keyboard()
+        BOT.sendMessage(chat_id, 'Welcome', reply_markup=kbd)
+        return
+    if cmd == "stop" and len(words) == 1:
+        current_command = DeepCommands.STOP
+        kbd = gen_time_keyboard()
+        BOT.sendMessage(chat_id, 'Bye', reply_markup=kbd)
+        return
+    # now the command that returns the standard keyboard and maybe
+    # some more output
+    if time_pattern.match(cmd):
+        if current_command == DeepCommands.START:
+            output = call_timew(['start', CONFIG["default_task"], cmd])
+            current_command = DeepCommands.NONE
+        elif current_command == DeepCommands.STOP:
+            output = call_timew(['stop', CONFIG["default_task"], cmd])
+            current_command = DeepCommands.NONE
         else:
-            words = words[1:]
-        real_words = []
-        for word in words:
-            if word in CONFIG["task_shortcuts"]:
-                real_words.append(CONFIG["task_shortcuts"][word])
-            else:
-                real_words.append(word)
-        # if cmd is start, check that at least one of the known
-        # activity types is used
-        if cmd == "start":
-            # wenn kein Wort oder Wort mit Zahl
-            # anfängt, ist es eine Zeitangabe
-            # dann muss noch der Standard davor
-            if not real_words:
-                real_words = [CONFIG["default_task"]]
-            if real_words[0][0].isdigit():
-                real_words.insert(0, CONFIG["default_task"])
-        cmds = [cmd]+real_words
-        output = call_timew(cmds)
+            output = "did not get that"
+    if cmd == "w":
+        output = call_timew(['week'])
+    if cmd == "year":
+        now = datetime.datetime.now()
+        timestr = now.strftime("%Y-01-01")
+        output = call_timew(['week', timestr, 'to', 'today'])
+    if cmd == "cancel":
+        output = call_timew(['cancel'])
+    if cmd == "status":
+        output = call_timew(['summary', ':ids'])
     if isinstance(output, list):
         txt = "\n".join(output)
     else:
         txt = output
+    if not txt:
+        txt = "Nope"
+
     txt = "```\n"+txt+"\n```"
     BOT.sendMessage(chat_id, txt, parse_mode="Markdown",
                     reply_markup=STANDARD_KEYBOARD)
@@ -193,10 +162,11 @@ CMD_PROC = Popen(["/bin/bash", "-c", CONFIG["get_timew_commands"]],
                  stdin=PIPE, stdout=PIPE, stderr=PIPE)
 OUTPUT, _ = CMD_PROC.communicate()
 TIMEW_COMMANDS = str(OUTPUT.decode('utf8')).split('\n')
+current_command = DeepCommands.NONE
+time_pattern = re.compile("^[0-9][0-9]:[0-9][0-9]$")
 
 BOT = telepot.Bot(CONFIG["bot_id"])
-MessageLoop(BOT, {'chat': handle,
-                  'callback_query': on_virtual_keyboard}).run_as_thread()
+MessageLoop(BOT, {'chat': handle}).run_as_thread()
 print('I am listening ...')
 
 while 1:
