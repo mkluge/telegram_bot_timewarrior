@@ -18,7 +18,7 @@ from subprocess import Popen, PIPE
 import telepot
 import telepot.api
 from telepot.loop import MessageLoop
-from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 
 CONFIG_FILE_NAME = 'config.json'
 
@@ -29,12 +29,12 @@ OWN_COMMANDS = {
     "?": "list commands"
 }
 
-STANDARD_KEYBOARD = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Start', callback_data='start'),
-     InlineKeyboardButton(text='Stop', callback_data='stop'),
-     InlineKeyboardButton(text='Cancel', callback_data='cancel'),
-     InlineKeyboardButton(text='Status', callback_data='status'),
-     InlineKeyboardButton(text='W', callback_data='week')],
+STANDARD_KEYBOARD = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Start'),
+     KeyboardButton(text='Stop'),
+     KeyboardButton(text='Cancel'),
+     KeyboardButton(text='Status'),
+     KeyboardButton(text='W')],
 ])
 
 
@@ -71,9 +71,8 @@ def gen_time_keyboard(prefix):
     for num_5min in range(0, 4):
         tw_time = now - datetime.timedelta(minutes=num_5min*5)
         timestr = tw_time.strftime("%H:%M")
-        buttons.append(InlineKeyboardButton(
-            text=timestr, callback_data=prefix+"+"+timestr))
-    return InlineKeyboardMarkup(inline_keyboard=[buttons])
+        buttons.append(KeyboardButton(text=timestr))
+    return ReplyKeyboardMarkup(keyboard=[buttons])
 
 
 def on_virtual_keyboard(msg):
