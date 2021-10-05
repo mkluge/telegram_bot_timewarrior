@@ -105,19 +105,24 @@ def handle(msg):
     output = ""
     global current_command
 
-    # first the commands that return only a new keyboard
-    if cmd == "start" and len(words) == 1:
-        current_command = DeepCommands.START
-        kbd = gen_time_keyboard()
-        BOT.sendMessage(chat_id, 'Welcome', reply_markup=kbd)
-        return
-    if cmd == "stop" and len(words) == 1:
-        current_command = DeepCommands.STOP
-        kbd = gen_time_keyboard()
-        BOT.sendMessage(chat_id, 'Bye', reply_markup=kbd)
-        return
-    # now the command that returns the standard keyboard and maybe
-    # some more output
+    if cmd == "start":
+        if len(words) == 1:
+            current_command = DeepCommands.START
+            kbd = gen_time_keyboard()
+            BOT.sendMessage(chat_id, 'Welcome', reply_markup=kbd)
+            return
+        else:
+            output = call_timew(['start', CONFIG["default_task"], words[1]])
+            current_command = DeepCommands.NONE
+    if cmd == "stop":
+        if len(words) == 1:
+            current_command = DeepCommands.STOP
+            kbd = gen_time_keyboard()
+            BOT.sendMessage(chat_id, 'Bye', reply_markup=kbd)
+            return
+        else:
+            output = call_timew(['stop', words[1]])
+            current_command = DeepCommands.NONE
     if time_pattern.match(cmd):
         if current_command == DeepCommands.START:
             output = call_timew(['start', CONFIG["default_task"], cmd])
