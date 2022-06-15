@@ -26,8 +26,9 @@ for i in range(delta.days + 1):
     day = sdate + timedelta(days=i)
     days.append(day)
 
-df_target = pd.DataFrame(columns=["Datum", "Wochentag", "Start",
-                                  "Ende", "Pausen", "ArbeitszeitSoll", "ArbeitszeitIst", "Differenz"])
+
+columns=["Datum", "Wochentag", "Start", "Ende", "Pausen", "ArbeitszeitSoll", "ArbeitszeitIst", "Differenz"]
+df_target = pd.DataFrame(columns=columns)
 
 for day in days:
     newline = {}
@@ -56,6 +57,7 @@ for day in days:
         pausen_minuten -= pausen_stunden * 60
         newline["Pausen"] = '{:02.0f}'.format(pausen_stunden)+":"+'{:02.0f}'.format(pausen_minuten)
     newline["Differenz"] = newline["ArbeitszeitIst"]-newline["ArbeitszeitSoll"]
-    df_target = df_target.append(newline, ignore_index=True)
+    newdf = pd.DataFrame(data=[newline], columns=columns)
+    df_target = pd.concat([df_target, newdf])
 
 df_target.to_excel("arbeitszeit.xlsx")
