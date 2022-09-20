@@ -7,5 +7,6 @@
         "ma": "Management"
     },
     "default_task": "Management",
-    "timew_path": "/usr/local/bin/timew"
+    "timew_path": "/usr/local/bin/timew",
+    "tasks": [ "Dienste", "Personal", "Speicher", "Reise"]
 }

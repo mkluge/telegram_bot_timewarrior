@@ -41,6 +41,8 @@ STANDARD_KEYBOARD = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True,
 )
 
+ON_LABEL='🟢'
+OFF_LABEL='🔴'
 
 class DeepCommands(Enum):
     NONE = 0
