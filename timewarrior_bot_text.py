@@ -85,8 +85,7 @@ def gen_time_keyboard():
         timestr = tw_time.strftime("%H:%M")
         buttons.append(KeyboardButton(text=timestr))
     return ReplyKeyboardMarkup(keyboard=[buttons],
-                               resize_keyboard=True,
-                               one_time_keyboard=True)
+                               resize_keyboard=True)
 
 
 def handle(msg):
