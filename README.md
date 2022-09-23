@@ -41,6 +41,22 @@ timewarrior ALL = NOPASSWD: /usr/bin/systemctl restart timewarrior
 ```
 into it (assuming 'timewarrior' is the uid of the user ...)
 
+## Automatic deployment during development
+
+add a in the git repo a "hooks/post-receive" file and put into it:
+```
+git --work-tree=/var/www/deployed_project --git-dir=/path/to/bare_project.git checkout -f
+systemctl restart timewarrior
+```
+
+- chmod +x hooks/post-receive
+- add ssh access to the server where you want to run the service
+- add the remote to your local git repo
+  - git remote add deployment 'timearrior@your-server:/path/to/bare_project.git'
+  - git push --set-upstream deployment master
+
+
+
 ## Usage
 
 You can send the bot all [timewarrior commands](https://timewarrior.net/docs/). The bot provides a virtual keyboard for some commands. The start and the stop buttons record the time with the default activity. Send the bot "?" to get a list of all commands.
