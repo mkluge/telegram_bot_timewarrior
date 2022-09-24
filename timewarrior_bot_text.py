@@ -76,7 +76,7 @@ class TimeWarriorBot:
             if isinstance( button, list):
                 result.append(TimeWarriorBot.makeKeyboard(button))
             else:
-                result.append(InlineKeyboardButton(button, callback_data=button))
+                result.append(InlineKeyboardButton(text=button, callback_data=button))
         return result
 
     def call_timew(self, cmds):
@@ -180,9 +180,9 @@ class TimeWarriorBot:
         # if time is not tracked, show only start, status,
         #    and week
         else:
-            keyboard = self.makeKeyboard(["Start", "Status", "Week"])
+            keyboard = self.makeKeyboard([["Start", "Status", "Week"]])
         self.bot.sendMessage(
-            chat_id, output, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard)
+            chat_id, output, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard)
         )
 
     def chat(self, msg):
@@ -204,8 +204,8 @@ class TimeWarriorBot:
         if cmd == "start":
             if len(words) == 1:
                 self.current_command = DeepCommands.START
-                kbd = TimeWarriorBot.makeKeyboard(self.gen_time_keyboard())
-                self.bot.sendMessage(chat_id, "Welcome", reply_markup=InlineKeyboardMarkup(kbd))
+                kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
+                self.bot.sendMessage(chat_id, "Welcome", reply_markup=InlineKeyboardMarkup(inline_keyboard=kbd))
                 return
             else:
                 output = self.call_timew(
@@ -215,8 +215,8 @@ class TimeWarriorBot:
         if cmd == "stop":
             if len(words) == 1:
                 self.current_command = DeepCommands.STOP
-                kbd = TimeWarriorBot.makeKeyboard(self.gen_time_keyboard())
-                self.bot.sendMessage(chat_id, "Bye", reply_markup=InlineKeyboardMarkup(kbd))
+                kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
+                self.bot.sendMessage(chat_id, "Bye", reply_markup=InlineKeyboardMarkup(inline_keyboard=kbd))
                 return
             else:
                 output = self.call_timew(["stop", words[1]])
@@ -253,10 +253,10 @@ class TimeWarriorBot:
         #    and week
         else:
             keyboard = TimeWarriorBot.makeKeyboard(
-                ["Start", "Status", "Week"]
+                [["Start", "Status", "Week"]]
             )
         txt = "```\n" + txt + "\n```"
-        self.bot.sendMessage(chat_id, txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+        self.bot.sendMessage(chat_id, txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard))
 
 
 # main program
