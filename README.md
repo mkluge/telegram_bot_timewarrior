@@ -45,8 +45,24 @@ into it (assuming 'timewarrior' is the uid of the user ...)
 
 add a in the git repo a "hooks/post-receive" file and put into it:
 ```
-git --work-tree=/var/www/deployed_project --git-dir=/path/to/bare_project.git checkout -f
-systemctl restart timewarrior
+#!/bin/bash
+TARGET="/home/timewarrior/deploy-folder"
+GIT_DIR="/home/timewarrior/timewarrior_bot"
+BRANCH="main"
+
+mkdir -p $TARGET
+
+while read oldrev newrev ref
+do
+	# only checking out the master (or whatever branch you would like to deploy)
+	if [ "$ref" = "refs/heads/$BRANCH" ];
+	then
+		echo "Ref $ref received. Deploying ${BRANCH} branch to production..."
+		git --work-tree=$TARGET --git-dir=$GIT_DIR checkout -f $BRANCH
+	else
+		echo "Ref $ref received. Doing nothing: only the ${BRANCH} branch may be deployed on this server."
+	fi
+done
 ```
 
 - chmod +x hooks/post-receive
