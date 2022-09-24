@@ -3,6 +3,6 @@
     "user_id": your user id here,
     "get_timew_commands": "timew help | grep Additional -B1000 | grep timew | grep -v Usage | awk '{print $2}'",
     "timew_path": "/usr/local/bin/timew",
-    "tasks": [ "Dienste", "Personal", "Speicher", "Reise"]
+    "tasks": [ "Dienste", "Personal", "Speicher", "Reise"],
     "default_task": "Dienste"
 }

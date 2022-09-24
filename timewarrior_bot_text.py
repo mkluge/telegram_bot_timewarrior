@@ -9,6 +9,7 @@
 
 """
 
+from distutils.command.config import config
 from enum import Enum
 from os import chdir
 import time
@@ -16,14 +17,13 @@ import sys
 import datetime
 import json
 import re
+import argparse
 from os.path import isfile
 from subprocess import Popen, PIPE
 import telepot
 import telepot.api
 from telepot.loop import MessageLoop
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
-
-CONFIG_FILE_NAME = 'config.json'
 
 OWN_COMMANDS = {
     "j": "join the last two items",
@@ -154,11 +154,14 @@ def handle(msg):
     BOT.sendMessage(chat_id, txt, parse_mode="Markdown",
                     reply_markup=STANDARD_KEYBOARD)
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--config', type=str, action='store', default='config.json', dest='config_file')
+args = parser.parse_args()
 
-if not isfile(CONFIG_FILE_NAME):
-    print("config file "+CONFIG_FILE_NAME+" not present")
+if not isfile(args.config_file):
+    print(f'config file {args.config_file} not present')
     sys.exit(1)
-with open(CONFIG_FILE_NAME, 'r') as f:
+with open(args.config_file, 'r') as f:
     CONFIG = json.load(f)
 
 
