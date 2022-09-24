@@ -69,8 +69,7 @@ done
 - add ssh access to the server where you want to run the service
 - add the remote to your local git repo
   - git remote add deployment 'timearrior@your-server:/path/to/deploy.git'
-  - git push --set-upstream deployment master
-
+  - git push --set-upstream deployment main
 
 
 ## Usage
