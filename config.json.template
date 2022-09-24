@@ -4,6 +4,6 @@
     "get_timew_commands": "timew help | grep Additional -B1000 | grep timew | grep -v Usage | awk '{print $2}'",
     "timew_path": "/usr/local/bin/timew",
     "tasks": [ "Dienste", "Personal", "Speicher"],
-    "types": [ "Reise", "Meeting", "Work"],
+    "types": [ "Reise", "Meeting", "Büro"],
     "default_task": "Dienste"
 }
