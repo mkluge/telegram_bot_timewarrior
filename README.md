@@ -43,7 +43,7 @@ into it (assuming 'timewarrior' is the uid of the user ...)
 
 ## Automatic deployment during development
 
-on the server: add a bare git repo and put a file "hooks/post-receive" into it:
+on the server, where the script should be deployed automatically: add a bare git repo and put a file "hooks/post-receive" into it:
 ```
 #!/bin/bash
 TARGET="/home/timewarrior/deploy-folder"
