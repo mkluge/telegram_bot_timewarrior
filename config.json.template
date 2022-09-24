@@ -5,5 +5,5 @@
     "timew_path": "/usr/local/bin/timew",
     "tasks": [ "Dienste", "Personal", "Speicher"],
     "types": [ "Reise", "Meeting", "Büro"],
-    "default_task": "Dienste"
+    "default_task": "Dienste",
 }
