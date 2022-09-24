@@ -43,11 +43,11 @@ into it (assuming 'timewarrior' is the uid of the user ...)
 
 ## Automatic deployment during development
 
-add a in the git repo a "hooks/post-receive" file and put into it:
+on the server: add a bare git repo and put a file "hooks/post-receive" into it:
 ```
 #!/bin/bash
 TARGET="/home/timewarrior/deploy-folder"
-GIT_DIR="/home/timewarrior/timewarrior_bot"
+GIT_DIR="/home/timewarrior/deploy.git"
 BRANCH="main"
 
 mkdir -p $TARGET
