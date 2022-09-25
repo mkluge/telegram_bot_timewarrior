@@ -126,7 +126,6 @@ class TimeWarriorBot:
                 if word in self.config["tasks"]:
                     task = word
                     break
-        print( wtype, task)
         return (output, wtype, task)
 
     @staticmethod
@@ -148,6 +147,12 @@ class TimeWarriorBot:
             timestr = tw_time.strftime("%H:%M")
             buttons.append(timestr)
         return buttons
+
+    def setTaskType(self, task: Union[str, None], type: Union[str, None]) -> None:
+        _, ctype, ctask = self.getTimewarriorStatus()
+        new_type = type if type else ctype
+        new_task = task if task else ctask
+        self.call_timew(["start", new_task, new_type])
 
     def cmdToOutput(self, text) -> Tuple[str, InlineKeyboardMarkup]:
         words = text.split(" ")
@@ -194,7 +199,13 @@ class TimeWarriorBot:
                 output = self.call_timew(["stop", cmd])
             self.current_command = DeepCommands.NONE
             return self.getStatus()
-        _, keyboard = self.getStatus()
+        # check whether we got a work type or a task
+        if words[0] in self.config["tasks"]:
+            self.setTaskType(words[0], None)
+        if words[0] in self.config["types"]:
+            self.setTaskType(None, words[0])
+
+        status_output, keyboard = self.getStatus()
         if cmd == "week":
             output = self.call_timew(["week"])
         if cmd == "cancel":
@@ -206,7 +217,7 @@ class TimeWarriorBot:
         else:
             txt = output
         if not txt:
-            txt = "Nope"
+            txt = status_output
         return (txt, keyboard)
 
     def callbackQuery(self, msg):
@@ -260,7 +271,7 @@ class TimeWarriorBot:
         # send them
         self.bot.sendMessage(
             chat_id,
-            "```\n"+text+"\n```",
+            "```\n" + text + "\n```",
             parse_mode="Markdown",
             reply_markup=keyboard,
         )
