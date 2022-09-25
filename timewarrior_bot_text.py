@@ -179,7 +179,7 @@ class TimeWarriorBot:
                 return self.getStatus()
         if self.time_pattern.match(cmd):
             output = ""
-            if current_command == DeepCommands.START:
+            if self.current_command == DeepCommands.START:
                 output = self.call_timew(
                     [
                         "start",
@@ -188,9 +188,9 @@ class TimeWarriorBot:
                         cmd,
                     ]
                 )
-            elif current_command == DeepCommands.STOP:
+            elif self.current_command == DeepCommands.STOP:
                 output = self.call_timew(["stop", cmd])
-            current_command = DeepCommands.NONE
+            self.current_command = DeepCommands.NONE
             return self.getStatus()
         _, keyboard = self.getStatus()
         if cmd == "week":
