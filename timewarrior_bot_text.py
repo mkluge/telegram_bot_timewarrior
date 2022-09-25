@@ -50,7 +50,6 @@ class DeepCommands(Enum):
 
 
 class TimeWarriorBot:
-
     config = {}
     bot = {}
     current_command = DeepCommands.NONE
@@ -71,18 +70,18 @@ class TimeWarriorBot:
         self.bot = telepot.Bot(self.config["bot_id"])
 
     @staticmethod
-    def iterButtons( buttons:list)
+    def iterButtons(buttons: list):
         result = []
         for button in buttons:
-            if isinstance( button, list):
-                result.append(TimeWarriorBot.makeKeyboard(button))
+            if isinstance(button, list):
+                result.append(TimeWarriorBot.iterButtons(button))
             else:
                 result.append(InlineKeyboardButton(text=button, callback_data=button))
         return result
 
     @staticmethod
-    def makeKeyboard( buttons: list):
-        kbd = TimeWarriorBot.iterButtons( buttons)
+    def makeKeyboard(buttons: list):
+        kbd = TimeWarriorBot.iterButtons(buttons)
         return InlineKeyboardMarkup(inline_keyboard=kbd)
 
     def call_timew(self, cmds):
@@ -102,7 +101,7 @@ class TimeWarriorBot:
             return output.decode("utf8")
         return err.decode("utf8")
 
-    def get_current_status(self) -> Tuple[str, Union[str, None], Union[str, None]]:
+    def getTimewarriorStatus(self) -> Tuple[str, Union[str, None], Union[str, None]]:
         """gets the current type of work and
         the topic
         """
@@ -148,7 +147,7 @@ class TimeWarriorBot:
             buttons.append(timestr)
         return buttons
 
-    def cmdToOutput( self, text) -> Tuple(Union[str,None], Union[InlineKeyboardMarkup,None]):
+    def cmdToOutput(self, text) -> Tuple[str, InlineKeyboardMarkup]:
         words = text.split(" ")
         cmd = words[0].lower()
         output = ""
@@ -157,23 +156,43 @@ class TimeWarriorBot:
             if len(words) == 1:
                 self.current_command = DeepCommands.START
                 kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
-                return ('Welcome', kbd)
+                return ("Welcome", kbd)
             else:
                 output = self.call_timew(
-                    ["start", self.config["default_task"], 
-                    self.config["default_type"], words[1]]
+                    [
+                        "start",
+                        self.config["default_task"],
+                        self.config["default_type"],
+                        words[1],
+                    ]
                 )
                 self.current_command = DeepCommands.NONE
-                return (None,None)
+                return self.getStatus()
         if cmd == "stop":
             if len(words) == 1:
                 self.current_command = DeepCommands.STOP
                 kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
-                return ('Bye', kbd)
+                return ("Bye", kbd)
             else:
                 output = self.call_timew(["stop", words[1]])
                 self.current_command = DeepCommands.NONE
-                return (None, None)
+                return self.getStatus()
+        if self.time_pattern.match(cmd):
+            output = ""
+            if current_command == DeepCommands.START:
+                output = self.call_timew(
+                    [
+                        "start",
+                        self.config["default_task"],
+                        self.config["default_type"],
+                        cmd,
+                    ]
+                )
+            elif current_command == DeepCommands.STOP:
+                output = self.call_timew(["stop", cmd])
+            current_command = DeepCommands.NONE
+            return self.getStatus()
+        _, keyboard = self.getStatus()
         if cmd == "week":
             output = self.call_timew(["week"])
         if cmd == "cancel":
@@ -186,93 +205,33 @@ class TimeWarriorBot:
             txt = output
         if not txt:
             txt = "Nope"
+        return (txt, keyboard)
 
     def callbackQuery(self, msg):
-        query_id, from_id, cmd = telepot.glance(msg, flavor='callback_query')
-        # did someone just send us a timestamp
-        answer, keyboard = self.cmdToOutput(cmd)        
-        if answer:
-            self.bot.answerCallbackQuery( query_id, answer) 
-        self.sendStatus(msg["chat"]["id"], keyboard)
-
-    def sendStatus(self, chat_id, keyboard):
-        # check, what time warrior has as current status
-        output, wtype, task = self.get_current_status()
-        # figure out which keys to send
-        # the logic is as follows:
-        # if we want a time, only send the time buttons
-        # !this is already done by the code above
-        # if time is tracked, send stop, status, week
-        #    and the work types and topics and show the
-        #    active ones#
-        if wtype or task:
-            now_wtypes = [
-                ON_LABEL + t if wtype == t else t for t in self.config["types"]
-            ]
-            now_tasks = [ON_LABEL + t if task == t else t for t in self.config["tasks"]]
-            keyboard = self.makeKeyboard([
-                ["Stop", "Status", "Week"], 
-                now_wtypes, 
-                now_tasks])
-        # if time is not tracked, show only start, status,
-        #    and week
-        else:
-            keyboard = self.makeKeyboard([["Start", "Status", "Week"]])
-        self.bot.sendMessage(
-            chat_id, output, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard)
-        )
+        query_id, from_id, cmd = telepot.glance(msg, flavor="callback_query")
+        if msg["from"]["id"] != self.config["user_id"]:
+            return
+        answer, keyboard = self.cmdToOutput(cmd)
+        self.bot.answerCallbackQuery(query_id, "OK")
+        self.sendStatus(msg["message"]["chat"]["id"], answer, keyboard)
 
     def chat(self, msg):
         """called if user sends a message to the chat
         Args:
             msg (): the chat message
         """
-
         _, _, chat_id = telepot.glance(msg)
         # check for the correct user id
         if msg["from"]["id"] != self.config["user_id"]:
             return
 
         text = msg["text"]
-        words = text.split(" ")
-        cmd = words[0].lower()
-        output = ""
+        output, keyboard = self.cmdToOutput(text)
+        self.sendStatus(chat_id, output, keyboard)
 
-        if cmd == "start":
-            if len(words) == 1:
-                self.current_command = DeepCommands.START
-                kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
-                self.bot.sendMessage(chat_id, "Welcome", reply_markup=InlineKeyboardMarkup(inline_keyboard=kbd))
-                return
-            else:
-                output = self.call_timew(
-                    ["start", self.config["default_task"], words[1]]
-                )
-                self.current_command = DeepCommands.NONE
-        if cmd == "stop":
-            if len(words) == 1:
-                self.current_command = DeepCommands.STOP
-                kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
-                self.bot.sendMessage(chat_id, "Bye", reply_markup=InlineKeyboardMarkup(inline_keyboard=kbd))
-                return
-            else:
-                output = self.call_timew(["stop", words[1]])
-                self.current_command = DeepCommands.NONE
-        if cmd == "week":
-            output = self.call_timew(["week"])
-        if cmd == "cancel":
-            output = self.call_timew(["cancel"])
-        if cmd == "status":
-            output = self.call_timew(["summary", ":ids"])
-        if isinstance(output, list):
-            txt = "\n".join(output)
-        else:
-            txt = output
-        if not txt:
-            txt = "Nope"
-
-        # check, what time warrior has as current status
-        out_status, wtype, task = self.get_current_status()
+    def getStatus(self) -> Tuple[str, InlineKeyboardMarkup]:
+        # if not, check, what time warrior has as current status
+        output, wtype, task = self.getTimewarriorStatus()
         # figure out which keys to send
         # the logic is as follows:
         # if we want a time, only send the time buttons
@@ -285,15 +244,24 @@ class TimeWarriorBot:
                 ON_LABEL + t if wtype == t else t for t in self.config["types"]
             ]
             now_tasks = [ON_LABEL + t if task == t else t for t in self.config["tasks"]]
-            keyboard = TimeWarriorBot.makeKeyboard([["Stop", "Status", "Week"], now_wtypes, now_tasks])
+            keyboard = TimeWarriorBot.makeKeyboard(
+                [["Stop", "Status", "Week"], now_wtypes, now_tasks]
+            )
         # if time is not tracked, show only start, status,
         #    and week
         else:
-            keyboard = TimeWarriorBot.makeKeyboard(
-                [["Start", "Status", "Week"]]
-            )
-        txt = "```\n" + txt + "\n```"
-        self.bot.sendMessage(chat_id, txt, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard))
+            keyboard = TimeWarriorBot.makeKeyboard([["Start", "Status", "Week"]])
+        return (output, keyboard)
+
+    def sendStatus(self, chat_id, text, keyboard):
+        # if we get a keyboard and a text,
+        # send them
+        self.bot.sendMessage(
+            chat_id,
+            text,
+            parse_mode="Markdown",
+            reply_markup=keyboard,
+        )
 
 
 # main program
