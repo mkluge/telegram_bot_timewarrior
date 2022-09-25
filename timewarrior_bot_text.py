@@ -107,7 +107,7 @@ class TimeWarriorBot:
         """
         wtype: str = None
         task: str = None
-        output = self.call_timew([])
+        output = self.call_timew([]).split("\n")
         # we only need the first line, if there are many
         if isinstance(output, list):
             output = output[0]
@@ -125,6 +125,8 @@ class TimeWarriorBot:
             for word in words[1:]:
                 if word in self.config["tasks"]:
                     task = word
+                    break
+        print( wtype, task)
         return (output, wtype, task)
 
     @staticmethod
