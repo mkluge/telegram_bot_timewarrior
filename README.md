@@ -43,18 +43,33 @@ into it (assuming 'timewarrior' is the uid of the user ...)
 
 ## Automatic deployment during development
 
-add a in the git repo a "hooks/post-receive" file and put into it:
+on the server, where the script should be deployed automatically: add a bare git repo and put a file "hooks/post-receive" into it:
 ```
-git --work-tree=/var/www/deployed_project --git-dir=/path/to/bare_project.git checkout -f
-systemctl restart timewarrior
+#!/bin/bash
+TARGET="/home/timewarrior/deploy-folder"
+GIT_DIR="/home/timewarrior/deploy.git"
+BRANCH="main"
+
+mkdir -p $TARGET
+
+while read oldrev newrev ref
+do
+	# only checking out the master (or whatever branch you would like to deploy)
+	if [ "$ref" = "refs/heads/$BRANCH" ];
+	then
+		echo "Ref $ref received. Deploying ${BRANCH} branch to production..."
+		git --work-tree=$TARGET --git-dir=$GIT_DIR checkout -f $BRANCH
+	else
+		echo "Ref $ref received. Doing nothing: only the ${BRANCH} branch may be deployed on this server."
+	fi
+done
 ```
 
 - chmod +x hooks/post-receive
 - add ssh access to the server where you want to run the service
 - add the remote to your local git repo
-  - git remote add deployment 'timearrior@your-server:/path/to/bare_project.git'
-  - git push --set-upstream deployment master
-
+  - git remote add deployment 'timearrior@your-server:/path/to/deploy.git'
+  - git push --set-upstream deployment main
 
 
 ## Usage
