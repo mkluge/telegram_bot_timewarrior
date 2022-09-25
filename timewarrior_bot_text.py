@@ -11,6 +11,7 @@
 
 import argparse
 import datetime
+from doctest import OutputChecker
 import json
 import re
 import sys
@@ -70,7 +71,7 @@ class TimeWarriorBot:
         self.bot = telepot.Bot(self.config["bot_id"])
 
     @staticmethod
-    def makeKeyboard( buttons: list):
+    def iterButtons( buttons:list)
         result = []
         for button in buttons:
             if isinstance( button, list):
@@ -78,6 +79,11 @@ class TimeWarriorBot:
             else:
                 result.append(InlineKeyboardButton(text=button, callback_data=button))
         return result
+
+    @staticmethod
+    def makeKeyboard( buttons: list):
+        kbd = TimeWarriorBot.iterButtons( buttons)
+        return InlineKeyboardMarkup(inline_keyboard=kbd)
 
     def call_timew(self, cmds):
         """calls a timewarrior command
@@ -142,23 +148,54 @@ class TimeWarriorBot:
             buttons.append(timestr)
         return buttons
 
-    def callbackQuery(self, msg):
-        cmd = msg.data
-        # did someone just send us a timestamp
-        if self.time_pattern.match(cmd):
-            if self.current_command == DeepCommands.START:
+    def cmdToOutput( self, text) -> Tuple(Union[str,None], Union[InlineKeyboardMarkup,None]):
+        words = text.split(" ")
+        cmd = words[0].lower()
+        output = ""
+
+        if cmd == "start":
+            if len(words) == 1:
+                self.current_command = DeepCommands.START
+                kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
+                return ('Welcome', kbd)
+            else:
                 output = self.call_timew(
-                    ["start", self.config["types"][0], self.config["tasks"][0], cmd]
+                    ["start", self.config["default_task"], 
+                    self.config["default_type"], words[1]]
                 )
                 self.current_command = DeepCommands.NONE
-                self.bot.answerCallbackQuery(msg.id, "Started")
-            elif self.current_command == DeepCommands.STOP:
-                output = self.call_timew(["stop", cmd])
+                return (None,None)
+        if cmd == "stop":
+            if len(words) == 1:
+                self.current_command = DeepCommands.STOP
+                kbd = TimeWarriorBot.makeKeyboard([self.gen_time_keyboard()])
+                return ('Bye', kbd)
+            else:
+                output = self.call_timew(["stop", words[1]])
                 self.current_command = DeepCommands.NONE
-                self.bot.answerCallbackQuery(msg.id, "Stopped")
-        self.sendStatus(msg["chat"]["id"])
+                return (None, None)
+        if cmd == "week":
+            output = self.call_timew(["week"])
+        if cmd == "cancel":
+            output = self.call_timew(["cancel"])
+        if cmd == "status":
+            output = self.call_timew(["summary", ":ids"])
+        if isinstance(output, list):
+            txt = "\n".join(output)
+        else:
+            txt = output
+        if not txt:
+            txt = "Nope"
 
-    def sendStatus(self, chat_id):
+    def callbackQuery(self, msg):
+        query_id, from_id, cmd = telepot.glance(msg, flavor='callback_query')
+        # did someone just send us a timestamp
+        answer, keyboard = self.cmdToOutput(cmd)        
+        if answer:
+            self.bot.answerCallbackQuery( query_id, answer) 
+        self.sendStatus(msg["chat"]["id"], keyboard)
+
+    def sendStatus(self, chat_id, keyboard):
         # check, what time warrior has as current status
         output, wtype, task = self.get_current_status()
         # figure out which keys to send
