@@ -258,7 +258,7 @@ class TimeWarriorBot:
         # send them
         self.bot.sendMessage(
             chat_id,
-            text,
+            "```\n"+text+"\n```",
             parse_mode="Markdown",
             reply_markup=keyboard,
         )
