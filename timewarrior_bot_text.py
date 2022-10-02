@@ -11,26 +11,23 @@
 
 import argparse
 import datetime
-from doctest import OutputChecker
 import json
 import re
 import sys
 import time
 from distutils.command.config import config
+from doctest import OutputChecker
 from enum import Enum
 from os import chdir
 from os.path import isfile
 from subprocess import PIPE, Popen
 from typing import Tuple, Union
+
 import telepot
 import telepot.api
 from telepot.loop import MessageLoop
-from telepot.namedtuple import (
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-)
+from telepot.namedtuple import (InlineKeyboardButton, InlineKeyboardMarkup,
+                                KeyboardButton, ReplyKeyboardMarkup)
 
 OWN_COMMANDS = {
     "j": "join the last two items",

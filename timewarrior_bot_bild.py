@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import time
-import sys
-import random
 import datetime
-import telepot
-import urllib3
-import telepot.api
-import telepot
 import json
+import random
+import sys
+import time
+from subprocess import PIPE, Popen
+
+import telepot
+import telepot.api
+import urllib3
 from PIL import Image, ImageDraw, ImageFont
-from subprocess import Popen, PIPE
 
 shortcuts_data_filename = "/root/timewarrior_shortcuts.json"
 own_commands = {
