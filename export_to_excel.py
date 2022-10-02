@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
+from datetime import timedelta
 from math import floor
-from datetime import date, timedelta
+
+import numpy as np
+import pandas as pd
 
 tage = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
