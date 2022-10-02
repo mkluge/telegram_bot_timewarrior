@@ -51,7 +51,7 @@ for day in days:
         newline["ArbeitszeitSoll"] = 0
     else:
         newline["ArbeitszeitSoll"] = 480
-    if not day in df.tag.values:
+    if day not in df.tag.values:
         newline["Start"] = ""
         newline["Ende"] = ""
         newline["ArbeitszeitIst"] = 0
