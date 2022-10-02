@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+
+exports timewarrior data to an xls file
+
+Michael Kluge
+vollseil@gmail.com
+
+"""
+
 from datetime import timedelta
 from math import floor
 
@@ -68,9 +80,7 @@ for day in days:
         pausen_minuten = total_minutes - newline["ArbeitszeitIst"]
         pausen_stunden = floor(pausen_minuten / 60)
         pausen_minuten -= pausen_stunden * 60
-        newline["Pausen"] = (
-            "{:02.0f}".format(pausen_stunden) + ":" + "{:02.0f}".format(pausen_minuten)
-        )
+        newline["Pausen"] = f"{pausen_stunden:02.0f}" + ":" + "{pausen_minuten:02.0f}"
     newline["Differenz"] = newline["ArbeitszeitIst"] - newline["ArbeitszeitSoll"]
     newdf = pd.DataFrame(data=[newline], columns=columns)
     df_target = pd.concat([df_target, newdf])
