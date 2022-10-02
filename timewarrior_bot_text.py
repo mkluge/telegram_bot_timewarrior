@@ -10,21 +10,20 @@ vollseil@gmail.com
 
 """
 
-import re
-import json
-import time
-import sys
 import argparse
-from os.path import isfile
-from enum import Enum
-from subprocess import Popen, PIPE
-from typing import Tuple, Union
 import datetime
+import json
+import re
+import sys
+import time
+from enum import Enum
+from os.path import isfile
+from subprocess import PIPE, Popen
+from typing import Tuple, Union
 
 import telepot.api
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
-
 
 OWN_COMMANDS = {
     "j": "join the last two items",
