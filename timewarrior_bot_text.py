@@ -68,7 +68,7 @@ class TimeWarriorBot:
 
     @staticmethod
     def iter_buttons(buttons: list):
-        """create a list of button from a list of text"""
+        """ create a list of button from a list of text"""
         result = []
         for button in buttons:
             if isinstance(button, list):
@@ -79,7 +79,7 @@ class TimeWarriorBot:
 
     @staticmethod
     def make_keyboard(buttons: list) -> InlineKeyboardMarkup:
-        """generates a keyboard from a list of lists with buttons
+        """ generates a keyboard from a list of lists with buttons
 
         Args:
             buttons (list): list of lists of buttons
