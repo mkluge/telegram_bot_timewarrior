@@ -5,15 +5,21 @@ from datetime import date, timedelta
 
 tage = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
-df = pd.read_json('timew_export.json')
+df = pd.read_json("timew_export.json")
 
-df['start'] = pd.to_datetime(df['start'], format='%Y%m%dT%H%M%SZ').dt.tz_localize(
-    'utc').dt.tz_convert('Europe/Berlin')
-df['end'] = pd.to_datetime(df['end'], format='%Y%m%dT%H%M%SZ').dt.tz_localize(
-    'utc').dt.tz_convert('Europe/Berlin')
-df['workmin'] = (df.end-df.start).astype('timedelta64[m]')
-df['tag'] = df.start.dt.date
-df['wd'] = df.start.dt.weekday  # Mo=1,So=7
+df["start"] = (
+    pd.to_datetime(df["start"], format="%Y%m%dT%H%M%SZ")
+    .dt.tz_localize("utc")
+    .dt.tz_convert("Europe/Berlin")
+)
+df["end"] = (
+    pd.to_datetime(df["end"], format="%Y%m%dT%H%M%SZ")
+    .dt.tz_localize("utc")
+    .dt.tz_convert("Europe/Berlin")
+)
+df["workmin"] = (df.end - df.start).astype("timedelta64[m]")
+df["tag"] = df.start.dt.date
+df["wd"] = df.start.dt.weekday  # Mo=1,So=7
 
 sdate = df.iloc[0].tag
 edate = df.iloc[-1].tag
@@ -24,7 +30,16 @@ for i in range(delta.days + 1):
     days.append(day)
 
 
-columns=["Datum", "Wochentag", "Start", "Ende", "Pausen", "ArbeitszeitSoll", "ArbeitszeitIst", "Differenz"]
+columns = [
+    "Datum",
+    "Wochentag",
+    "Start",
+    "Ende",
+    "Pausen",
+    "ArbeitszeitSoll",
+    "ArbeitszeitIst",
+    "Differenz",
+]
 df_target = pd.DataFrame(columns=columns)
 
 for day in days:
@@ -44,16 +59,18 @@ for day in days:
         today = df[df.tag == day]
         start = today.iloc[0].start
         end = today.iloc[-1].end
-        total_minutes = np.ceil((end-start).total_seconds()/60)
+        total_minutes = np.ceil((end - start).total_seconds() / 60)
         newline["Start"] = start.strftime("%H:%M")
         newline["Ende"] = end.strftime("%H:%M")
         newline["ArbeitszeitIst"] = int(today["workmin"].sum())
 
-        pausen_minuten = total_minutes-newline["ArbeitszeitIst"]
+        pausen_minuten = total_minutes - newline["ArbeitszeitIst"]
         pausen_stunden = floor(pausen_minuten / 60)
         pausen_minuten -= pausen_stunden * 60
-        newline["Pausen"] = '{:02.0f}'.format(pausen_stunden)+":"+'{:02.0f}'.format(pausen_minuten)
-    newline["Differenz"] = newline["ArbeitszeitIst"]-newline["ArbeitszeitSoll"]
+        newline["Pausen"] = (
+            "{:02.0f}".format(pausen_stunden) + ":" + "{:02.0f}".format(pausen_minuten)
+        )
+    newline["Differenz"] = newline["ArbeitszeitIst"] - newline["ArbeitszeitSoll"]
     newdf = pd.DataFrame(data=[newline], columns=columns)
     df_target = pd.concat([df_target, newdf])
 
