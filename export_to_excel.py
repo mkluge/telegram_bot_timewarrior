@@ -30,7 +30,7 @@ df["end"] = (
     .dt.tz_localize("utc")
     .dt.tz_convert("Europe/Berlin")
 )
-df["workmin"] = (df.end - df.start).astype("timedelta64[m]")
+df["workmin"] = (df.end - df.start) / pd.Timedelta(minutes=1)
 df["tag"] = df.start.dt.date
 df["wd"] = df.start.dt.weekday  # Mo=1,So=7
 
