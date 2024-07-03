@@ -73,9 +73,13 @@ for day in days:
         start = today.iloc[0].start
         end = today.iloc[-1].end
         total_minutes = np.ceil((end - start).total_seconds() / 60)
-        newline["Start"] = start.strftime("%H:%M")
-        newline["Ende"] = end.strftime("%H:%M")
-        newline["ArbeitszeitIst"] = int(today["workmin"].sum())
+        try:
+            newline["Start"] = start.strftime("%H:%M")
+            newline["Ende"] = end.strftime("%H:%M")
+            newline["ArbeitszeitIst"] = int(today["workmin"].sum())
+        except ValueError as err:
+            print(f"Fehler am {day}: {err}")
+    
 
         pausen_minuten = total_minutes - newline["ArbeitszeitIst"]
         pausen_stunden = floor(pausen_minuten / 60)
