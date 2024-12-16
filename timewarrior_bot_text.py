@@ -259,7 +259,7 @@ class TimeWarriorBot:
         Args:
             msg (): the chat message
         """
-        _, _, chat_id, _, _ = telepot.glance(msg)
+        _, _, chat_id = telepot.glance(msg)
         # check for the correct user id
         if msg["from"]["id"] != self.config["user_id"]:
             return
@@ -289,9 +289,8 @@ class TimeWarriorBot:
                 ON_LABEL + t if wtype == t else t for t in self.config["types"]
             ]
             now_tasks = [ON_LABEL + t if task == t else t for t in self.config["tasks"]]
-            keyboard = TimeWarriorBot.make_keyboard(
-                [["Stop", "Status", "Week"], now_wtypes, now_tasks]
-            )
+            #keyboard = TimeWarriorBot.make_keyboard([["Stop", "Status", "Week"], now_wtypes, now_tasks])
+            keyboard = TimeWarriorBot.make_keyboard([["Stop", "Status", "Week"]])
         # if time is not tracked, show only start, status,
         #    and week
         else:
