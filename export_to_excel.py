@@ -51,6 +51,8 @@ columns = [
     "Pausen",
     "ArbeitszeitSoll",
     "ArbeitszeitIst",
+    "Stunden",
+    "Minuten",
     "Differenz",
 ]
 df_target = pd.DataFrame(columns=columns)
@@ -79,12 +81,13 @@ for day in days:
             newline["ArbeitszeitIst"] = int(today["workmin"].sum())
         except ValueError as err:
             print(f"Fehler am {day}: {err}")
-    
 
-        pausen_minuten = total_minutes - newline["ArbeitszeitIst"]
-        pausen_stunden = floor(pausen_minuten / 60)
-        pausen_minuten -= pausen_stunden * 60
-        newline["Pausen"] = f'{pausen_stunden:02.0f}:{pausen_minuten:02.0f}'
+        pausen_minuten_f = total_minutes - newline["ArbeitszeitIst"]
+        pausen_stunden = floor(pausen_minuten_f / 60)
+        pausen_minuten = pausen_minuten_f - pausen_stunden * 60
+        newline["Pausen"] = f"{pausen_stunden:02.0f}:{pausen_minuten:02.0f}"
+        newline["Stunden"] = floor((total_minutes-pausen_minuten_f) / 60)
+        newline["Minuten"] = (total_minutes-pausen_minuten_f) - (60 * newline["Stunden"])
     newline["Differenz"] = newline["ArbeitszeitIst"] - newline["ArbeitszeitSoll"]
     newdf = pd.DataFrame(data=[newline], columns=columns)
     df_target = pd.concat([df_target, newdf])
