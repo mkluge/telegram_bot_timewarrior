@@ -55,7 +55,9 @@ columns = [
     "Minuten",
     "Differenz",
 ]
-df_target = pd.DataFrame(columns=columns)
+
+# Alle Daten in einer Liste sammeln statt DataFrame schrittweise aufzubauen
+all_data = []
 
 for day in days:
     newline = {}
@@ -70,6 +72,8 @@ for day in days:
         newline["Ende"] = ""
         newline["ArbeitszeitIst"] = 0
         newline["Pausen"] = "00:00"
+        newline["Stunden"] = 0
+        newline["Minuten"] = 0
     else:
         today = df[df.tag == day]
         start = today.iloc[0].start
@@ -89,7 +93,11 @@ for day in days:
         newline["Stunden"] = floor((total_minutes-pausen_minuten_f) / 60)
         newline["Minuten"] = (total_minutes-pausen_minuten_f) - (60 * newline["Stunden"])
     newline["Differenz"] = newline["ArbeitszeitIst"] - newline["ArbeitszeitSoll"]
-    newdf = pd.DataFrame(data=[newline], columns=columns)
-    df_target = pd.concat([df_target, newdf])
+    
+    # Statt DataFrame schrittweise aufzubauen, sammle alle Daten in einer Liste
+    all_data.append(newline)
+
+# Erstelle den DataFrame erst am Ende mit allen gesammelten Daten
+df_target = pd.DataFrame(all_data, columns=columns)
 
 df_target.to_excel("arbeitszeit.xlsx")
